@@ -1,0 +1,17 @@
+// Virtual environments
+env/
+venv/
+environment/
+
+// Vim swap files
+.*.swp
+
+// VS code settings 
+.vscode/
+
+// Pycache files
+*.pyc
+
+// Possible build directory
+[Bb]uild/
+
