@@ -2,11 +2,11 @@ version: '3'
 
 services:
   
-  main-server:
-    image: python 
+  example-app:
+    image: "redis:alpine" 
 
     build:
-      context: .
+      context: src/python/example-app/ 
       dockerfile: Dockerfile
       
     ports:
