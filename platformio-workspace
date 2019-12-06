@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "TempReadings",
+			"path": "src/c-cpp/TempReadings"
+		}
+	],
+	"settings": {}
+}

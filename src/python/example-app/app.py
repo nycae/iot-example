@@ -28,6 +28,15 @@ def render_msg():
 def index():
     return '<h1>Hello, world<h1>'
 
+@app.route('/example', methods = ['POST'])
+def attend_example():
+    print(request)
+    print(request.json)
+    if not request.json or not 'msg' in request.json:
+        return make_response(jsonify({'error' : 'Bad request'}), 400)
+    else:
+        return make_response(jsonify({'precio' : 300}), 200)
+
 # Tambien podemos expecificar que metodos queremos para un endpoint, en este 
 # caso el endpoint /messages solo puede accederse con los verbos GET y POST.
 # Dentro del objeto 'request' esta toda la informacion del protocolo http.
@@ -46,7 +55,7 @@ def operation():
             if not request.form or not 'msg' in request.form:
                 return make_response(jsonify({'error' : 'Bad request'}), 400)
             else:
-                add_from_form()
+                add_from_form() 
         else:
             add_from_json()
 
@@ -65,6 +74,33 @@ def operation():
 def insert_msg(msg):
     messages.append(msg)
     return render_msg()
+
+@app.route('/arduino', methods=['POST', 'GET'])
+def attend_arduino():
+    def attend_post():
+        if not request.json or not 'msg' in request.json:
+            return make_response(jsonify({'error' : 'Bad request'}), 400)
+        else:
+            return make_response(jsonify({'msg' : 'Well done'}), 200)
+    
+    def attend_get():
+        return make_response(jsonify({'msg' : 'Good get'}), 200)
+
+    print(request.headers)
+
+    if request.method == 'GET':
+        return attend_get()
+    elif request.method == 'POST':
+        return attend_post()
+
+@app.route('/temp', methods=['POST']) 
+@app.route('/weight', methods=['POST'])
+def weight():
+    if not request.json or not 'msg' in request.json:
+        return make_response(jsonify({'error' : 'Bad request'}), 400)
+    else:
+        return make_response(jsonify({'msg': 'Well done'}), 200)
+
 
 
 if __name__ == '__main__':

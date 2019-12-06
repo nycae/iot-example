@@ -1,10 +1,7 @@
 version: '3'
 
 services:
-  
-  example-app:
-    image: "redis:alpine" 
-
+  example-app:  
     build:
       context: src/python/example-app/ 
       dockerfile: Dockerfile
