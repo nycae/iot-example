@@ -1,6 +1,7 @@
 version: '3'
 
 services:
+
   example-app:  
     build:
       context: src/python/example-app/ 
@@ -8,4 +9,28 @@ services:
       
     ports:
       - "5000:5000"
+
+  mysql-admin:
+    image: mysql:5.7
+    environment:
+      - MYSQL_DATABASE=products_stock
+      - MYSQL_USER=athemes_user
+      - MYSQL_PASSWORD=athemes_password
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - "3306:3306"
+
+  central-server:
+    build: ./central_server
+    command: sh -c "
+                 wait-for-it mysql-admin:3306 &&
+                 python manage.py migrate &&
+                 python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./central_server:/code
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      - mysql-admin
       
