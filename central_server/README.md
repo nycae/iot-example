@@ -32,6 +32,12 @@ alarm if set.
 
 Either if the alarm is set or not, a resample of those 15 seconds will be stored in the main db.
 
+Example to trigger the alarm:
+`curl -X POST localhost:8000/fire_alarm/ -H "Content-Type: application/json" --data '{"data": [{"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 45}, {"temperature": 45}, {"temperature": 45}, {"temperature": 45}, {"temperature": 45}]}'`
+
+Example to not trigger the alarm:
+`curl -X POST localhost:8000/fire_alarm/ -H "Content-Type: application/json" --data '{"data": [{"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 45}, {"temperature": 45}, {"temperature": 45}, {"temperature": 45}, {"temperature": 45}, {"temperature": 45}]}'`
+
 ### Insufficient stock alert
 Triggered when the weight of a part of a shelf is under the threshold for a certain amount of time. 
 Queried each minute, with the weight of each shelf part recollected each second. If for 45 seconds

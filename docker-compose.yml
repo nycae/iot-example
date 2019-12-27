@@ -10,7 +10,7 @@ services:
     ports:
       - "5000:5000"
 
-  mysql-admin:
+  mysql-central-server:
     image: mysql:5.7
     environment:
       - MYSQL_DATABASE=products_stock
@@ -23,14 +23,15 @@ services:
   central-server:
     build: ./central_server
     command: sh -c "
-                 wait-for-it mysql-admin:3306 &&
+                 wait-for-it mysql-central-server:3306 &&
                  python manage.py migrate &&
                  python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./central_server:/code
     ports:
       - "8000:8000"
-
+    env_file:
+      - ./central_server/.env
     depends_on:
-      - mysql-admin
-      
+      - mysql-central-server
+
