@@ -1,14 +1,37 @@
-version: '3'
+version: '2'
 
 services:
 
-  example-app:  
-    build:
-      context: src/python/example-app/ 
-      dockerfile: Dockerfile
-      
-    ports:
-      - "5000:5000"
+  # ### Remember ctrl + / for block comment
+  # collectd:
+  #   extends: 
+  #     file: ./collectd-influxdb-grafana-docker/docker-compose.yml
+  #     service: collectd
+
+  # influxdb:
+  #   extends: 
+  #     file: ./collectd-influxdb-grafana-docker/docker-compose.yml
+  #     service: influxdb
+
+  # grafana:
+  #   extends: 
+  #     file: ./collectd-influxdb-grafana-docker/docker-compose.yml
+  #     service: grafana
+
+  # chronograf:
+  #   extends: 
+  #     file: ./collectd-influxdb-grafana-docker/docker-compose.yml
+  #     service: chronograf
+
+  # telegraf:
+  #   extends:
+  #     file: ./collectd-influxdb-grafana-docker/docker-compose.yml
+  #     service: telegraf
+
+  # kapacitor:
+  #   extends:
+  #     file: ./collectd-influxdb-grafana-docker/docker-compose.yml
+  #     service: kapacitor
 
   mysql-central-server:
     image: mysql:5.7
@@ -23,9 +46,9 @@ services:
   central-server:
     build: ./central_server
     command: sh -c "
-                 wait-for-it mysql-central-server:3306 &&
-                 python manage.py migrate &&
-                 python manage.py runserver 0.0.0.0:8000"
+                  wait-for-it mysql-central-server:3306 &&
+                  python manage.py migrate &&
+                  python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./central_server:/code
     ports:

@@ -1,0 +1,3 @@
+[submodule "collectd-influxdb-grafana-docker"]
+	path = collectd-influxdb-grafana-docker
+	url = https://github.com/davidvilla/collectd-influxdb-grafana-docker
