@@ -5,26 +5,30 @@
 #include "esp_wifi.h"
 #include "soc/sens_reg.h"
 
-#define SSID        "fkplatedev24"
-#define PASSWORD    "20fkpr18"
-#define HOST        "192.168.43.246"
+#define SSID        "RedDeRober"
+#define PASSWORD    "RDR23Pass"
+#define HOST        "192.168.1.150"
 #define PORT        5000
 #define TEMP_ENDP   "temp"
 #define WEIGHT_ENDP "weight"
-#define MESSAGE     "{\n\t\"msg\": %d}"
+#define MESSAGE     "{\"msg\": %f}"
 #define ENDP_BKBN   "http://%s:%d/%s" // host:port/manager
 
+constexpr int32_t   max_reading = 4096;
+constexpr uint8_t   temp_pin    = A0;
+constexpr uint8_t   weight_pin  = A1;
 
-enum class LedColour : uint8_t { Blue = D10, Green = D11 };
-
+enum class LedColour 
+  : uint8_t 
+{ 
+  Blue  = D10, 
+  Green = D11 
+};
 
 WiFiClient espClient;
 HTTPClient httpClient;
 
 LedColour led_colour;
-
-char json_reading[256]; // 1 Mb
-char complete_endpoint[256];
 
 uint64_t read_ctl2;
 
@@ -54,31 +58,29 @@ void wifi_connect() {
   Serial.println(WiFi.localIP());
 }
 
-int read_temp() {
+int read(uint8_t pin) {
   WRITE_PERI_REG(SENS_SAR_READ_CTRL2_REG, read_ctl2);
-  return analogRead(A0);
+  return max_reading - analogRead(pin);
 }
 
-int read_weight() {
-  WRITE_PERI_REG(SENS_SAR_READ_CTRL2_REG, read_ctl2);
-  return analogRead(A1);
-}
+void send (char* server_endpoint, float reading) {
 
-void prepare_temp () {
-  sprintf(json_reading, MESSAGE, read_temp());
-  sprintf(complete_endpoint, ENDP_BKBN, HOST, PORT, TEMP_ENDP);
-}
+  char json_reading[256];
+  char complete_endpoint[128];
 
-void prepare_weight () {
-  sprintf(json_reading, MESSAGE, read_weight());
-  sprintf(complete_endpoint, ENDP_BKBN, HOST, PORT, WEIGHT_ENDP);
-}
+  sprintf(complete_endpoint, ENDP_BKBN, HOST, PORT, server_endpoint);
+  sprintf(json_reading, MESSAGE, reading);
 
-void send_data () {
   httpClient.begin(complete_endpoint);
   httpClient.addHeader("Content-Type", "application/json");
 
+  Serial.printf("Sending: %s\nTo: %s\n", json_reading, complete_endpoint);
+
   httpClient.POST(json_reading);
+}
+
+float transform_boundary(int reading, float lower_bound, float upper_bound) {
+  return ((reading / (float) max_reading) * upper_bound) + lower_bound; // standard normalization function
 }
 
 void switch_led () {
@@ -108,17 +110,21 @@ void setup() {
   shutdown_rgb_led();
   wifi_connect();
 
-  led_colour = (rand() % 10 > 5) ? LedColour::Green : LedColour::Blue; 
+  led_colour = (rand() % 2) ? LedColour::Green : LedColour::Blue; 
 }
 
 void loop() {
-  switch_led();
-  prepare_temp();
-  send_data();
-  delay(1000);
 
-  switch_led();
-  prepare_weight();
-  send_data();
+  /** Forma entendible **/
+  const int temp_reading = read(temp_pin);
+  const float fair_temp_reading = transform_boundary(temp_reading, 0.0f, 55.0f);
+
+  send(TEMP_ENDP, fair_temp_reading);
   delay(1000);
+  switch_led();
+
+  /** Forma concisa **/
+  send(WEIGHT_ENDP, transform_boundary(read(weight_pin), 10.0f, 200.0f));
+  delay(1000);
+  switch_led();
 }
