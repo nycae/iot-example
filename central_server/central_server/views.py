@@ -1,33 +1,44 @@
-from rest_framework import views
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.views import APIView
 from django.http import JsonResponse
+from central_server.models import FireAlarm, TemperatureMetric
+from central_server.serializers import FireAlarmSerializer, TemperatureMetricSerializer
 import json
 
-TEMPERATURE_THRESHOLD = 50
-N_TEMPERATURE_INCREMENTED_THRESHOLD = 10
+MAX_NUMBER_TEMPS_METRICS = 15
 
 
-class FireAlarmView(views.APIView):
+class FireAlarmViewSet(ModelViewSet):
     """
     API endpoint to manage fire alarm triggers
     """
+    serializer_class = FireAlarmSerializer
 
-    def post(self, request=None, format=None):
-        """
-        Checks if the alarm should be set
-        """
-        n_temperature_incremented = 0
+    queryset = FireAlarm.objects.all()
+
+    def perform_create(self, serializer):
+        # Perform create
+        serializer.save()
+        print("Fire alarm created")
+
+
+class TemperatureCollection(APIView):
+    http_method_names = ['post']
+
+    def post(self, request, fire_alarm_id):
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
-        samples = body['data']
-        samples_ordered_by_temperature = sorted(samples, key=lambda k: k['temperature'])
-        print(str(samples_ordered_by_temperature))
-        for sample in samples_ordered_by_temperature:
-            if sample['temperature'] >= TEMPERATURE_THRESHOLD:
-                n_temperature_incremented += 1
-            else:
-                n_temperature_incremented = 0
-        if n_temperature_incremented >= N_TEMPERATURE_INCREMENTED_THRESHOLD:
-            print("There's a fire! Set the alarm!")
-            # Put here HTTP request to the board to activate a light
+        temp = body['temp']
 
-        return JsonResponse({'data': body['data']})
+        fire_alarm = FireAlarm.objects.get(_id=fire_alarm_id)
+
+        TemperatureMetric.objects.create(
+            temp=temp,
+            fire_alarm=fire_alarm,
+        )
+
+        if len(fire_alarm.temperaturemetric_set.all().values()) \
+                >= MAX_NUMBER_TEMPS_METRICS:
+            fire_alarm.alarm_check()
+
+        return JsonResponse({'temp': str(temp)})

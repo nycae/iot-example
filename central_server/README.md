@@ -25,18 +25,35 @@ information is processed and the needed processes are executed, a sample of that
 inside the mysql database.
 
 ### Fire alarm
-Triggered when there are consecutive timestamps with a high enough temperature value.
-Queried by the central server every 15 seconds. Since the temperature is recollected every second,
-there would be 15 registers per query. If 10 of those are bigger than the threshold of 50º, the 
-alarm if set.
+Triggered when there are consecutive timestamps with a high enough temperature value. Every 
+to be determined amount of time, the sensor will send a POST petition with the server which is a 
+dictionary with the only key "temp" and the current temperature that it registered.
 
-Either if the alarm is set or not, a resample of those 15 seconds will be stored in the main db.
+After 15 entries the central server studies if it's needed to set the alarm of not. If more than 
+10 are equal or over to 50 degree celsius, the alarm if set. If not, nothing is set off.
+
+The DJango db only stores the last 15 entries of every fire alarm, so every time the alarm is 
+checked, the entries are deleted afterwards. There would be a historic of all the temperature data
+stored in the influxdb, which will be updated automatically after each check.
+
+#### Setting up 
+
+Creating an alarm. The petition will return the id. The id is used in the endpoint
+`fire_alarm/<fire_alarm_id>/temp` used to introduce temperature metrics by the fire alarm sensor
+
+`curl -X post localhost:8000/fire_alarm/`
+
+Taking into consideration that the fire alarm id is 1;
 
 Example to trigger the alarm:
-`curl -X POST localhost:8000/fire_alarm/ -H "Content-Type: application/json" --data '{"data": [{"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 45}, {"temperature": 45}, {"temperature": 45}, {"temperature": 45}, {"temperature": 45}]}'`
+Send 15 times:
+
+`curl -X post -H "Content-Type: application/json" -d '{"temp":50}' localhost:8000/fire_alarm/1/temp`
 
 Example to not trigger the alarm:
-`curl -X POST localhost:8000/fire_alarm/ -H "Content-Type: application/json" --data '{"data": [{"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 45}, {"temperature": 45}, {"temperature": 45}, {"temperature": 45}, {"temperature": 45}, {"temperature": 45}]}'`
+Send 15 times:
+
+`curl -X post -H "Content-Type: application/json" -d '{"temp":30}' localhost:8000/fire_alarm/1/temp`
 
 ### Insufficient stock alert
 Triggered when the weight of a part of a shelf is under the threshold for a certain amount of time. 
