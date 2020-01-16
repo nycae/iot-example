@@ -47,7 +47,7 @@ services:
     build: ./central_server
     command: sh -c "
                   wait-for-it mysql-central-server:3306 &&
-                  python manage.py makemigrations central_server &&
+#                  python manage.py makemigrations central_server &&
                   python manage.py migrate &&
                   python manage.py runserver 0.0.0.0:8000"
     volumes:
