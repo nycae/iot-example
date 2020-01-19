@@ -4,7 +4,7 @@ from influxdb import InfluxDBClient
 from datetime import datetime
 
 temp_blueprint = Blueprint('temperatures', __name__)
-db_temp_client = InfluxDBClient(host="influxdb", 
+db_temp_client = InfluxDBClient(host="localhost",#"influxdb", 
                                 port=8086, 
                                 username='admin', 
                                 password='admin',
@@ -18,7 +18,7 @@ temp_insert_msg_body = [
         },
         "time": None, 
         "fields": {
-            "measurement": None
+            "value": None
         }
     }
 ]
@@ -26,18 +26,18 @@ temp_insert_msg_body = [
 def add_temp(temp_reading):
     insert_query = temp_insert_msg_body
     insert_query[0]["time"] = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-    insert_query[0]["fields"]["measurement"] = temp_reading
+    insert_query[0]["fields"]["value"] = temp_reading
 
     db_temp_client.write_points(insert_query)
     
 
 def get_temps():
     measurements    = []
-    result          = db_temp_client.query("SELECT * FROM temperatures;")
+    result          = db_temp_client.query('SELECT value FROM temperatures;')
 
-    for i in result:
-        for j in i:
-            measurements.append(j['measurement'])
+    for element in result.raw['series']:
+        for value in element['values']:
+            measurements.append(value)
 
     return measurements
 
