@@ -4,7 +4,7 @@ from influxdb import InfluxDBClient
 from datetime import datetime
 
 temp_blueprint = Blueprint('temperatures', __name__)
-db_temp_client = InfluxDBClient(host="localhost",#"influxdb", 
+db_temp_client = InfluxDBClient(host="influxdb", 
                                 port=8086, 
                                 username='admin', 
                                 password='admin',

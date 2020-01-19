@@ -4,7 +4,7 @@ from influxdb import InfluxDBClient
 from datetime import datetime
 
 weight_blueprint = Blueprint('weights', __name__)
-db_weight_client = InfluxDBClient(host="localhost",#"influxdb", 
+db_weight_client = InfluxDBClient(host="influxdb", 
                                 port=8086, 
                                 username='admin', 
                                 password='admin',
