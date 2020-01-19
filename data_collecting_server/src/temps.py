@@ -1,0 +1,55 @@
+from flask import Blueprint, request, make_response, jsonify
+from influxdb import InfluxDBClient
+
+from datetime import datetime
+
+temp_blueprint = Blueprint('temperatures', __name__)
+db_temp_client = InfluxDBClient(host="influxdb", 
+                                port=8086, 
+                                username='admin', 
+                                password='admin',
+                                database='temperatures')
+
+temp_insert_msg_body = [
+    {
+        "measurement": "temperatures",
+        "tags": {
+            "host": "data_server"
+        },
+        "time": None, 
+        "fields": {
+            "measurement": None
+        }
+    }
+]
+
+def add_temp(temp_reading):
+    insert_query = temp_insert_msg_body
+    insert_query[0]["time"] = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+    insert_query[0]["fields"]["measurement"] = temp_reading
+
+    db_temp_client.write_points(insert_query)
+    
+
+def get_temps():
+    measurements    = []
+    result          = db_temp_client.query("SELECT * FROM temperatures;")
+
+    for i in result:
+        for j in i:
+            measurements.append(j['measurement'])
+
+    return measurements
+
+
+@temp_blueprint.route('/temp', methods = ['POST', 'GET'])
+def attend_temperatures():
+    if request.method == 'POST':
+        if not request.json or not 'msg' in request.json:
+            return make_response(jsonify({'error' : 'Bad Request'}), 400)
+        else:
+            add_temp(request.json['msg'])
+            return make_response(jsonify({'success': True}), 200)
+
+    if request.method == 'GET':
+        return make_response(jsonify({ 'data' : get_temps() }), 200)
