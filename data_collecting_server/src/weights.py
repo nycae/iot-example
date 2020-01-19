@@ -4,7 +4,7 @@ from influxdb import InfluxDBClient
 from datetime import datetime
 
 weight_blueprint = Blueprint('weights', __name__)
-db_weight_client = InfluxDBClient(host="influxdb", 
+db_weight_client = InfluxDBClient(host="localhost",#"influxdb", 
                                 port=8086, 
                                 username='admin', 
                                 password='admin',
@@ -18,7 +18,7 @@ weight_insert_msg_body = [
         },
         "time": None, 
         "fields": {
-            "measurement": None
+            "value": None
         }
     }
 ]
@@ -27,20 +27,20 @@ weight_insert_msg_body = [
 def add_weight(weight_reading):
     insert_query = weight_insert_msg_body
     insert_query[0]["time"] = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-    insert_query[0]["fields"]["measurement"] = weight_reading
+    insert_query[0]["fields"]["value"] = weight_reading
 
     db_weight_client.write_points(insert_query)
 
 def get_weights():
     measurements    = []
-    result          = db_weight_client.query("SELECT * FROM weights;")
+    result          = db_weight_client.query('SELECT value FROM weights;')
 
-    for i in result:
-        for j in i:
-            measurements.append(j['measurement'])
+    for element in result.raw['series']:
+        for value in element['values']:
+            measurements.append(value)
 
     return measurements
-    
+
 
 @weight_blueprint.route('/weight', methods = ['POST', 'GET'])
 def attend_weights():

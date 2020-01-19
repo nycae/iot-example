@@ -59,10 +59,10 @@ services:
 #     depends_on:
 #       - mysql-central-server
 
-  data-collecting-server:
-    build: ./data_collecting_server
-    ports:
-      - "5000:5000"
-    depends_on: 
-      - influxdb
+  # data-collecting-server:
+  #   build: ./data_collecting_server
+  #   ports:
+  #     - "5000:5000"
+  #   depends_on: 
+  #     - influxdb
 
