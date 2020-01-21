@@ -2,7 +2,6 @@ version: '2'
 
 services:
 
-  ### Remember ctrl + / for block comment
   collectd:
     extends: 
       file: ./collectd-influxdb-grafana-docker/docker-compose.yml

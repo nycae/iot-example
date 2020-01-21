@@ -7,7 +7,7 @@ from weights import weight_blueprint
 app = Flask(__name__)
 
 app.register_blueprint(temp_blueprint)
-app.register_blueprint(weight_blueprint)
+#app.register_blueprint(weight_blueprint)
 
 
 if __name__ == '__main__':

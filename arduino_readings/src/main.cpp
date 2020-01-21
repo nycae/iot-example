@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <ArduinoJson.h>
 
 #include "Arduino.h"
 #include "esp_wifi.h"
@@ -7,11 +8,10 @@
 
 #define SSID        "RedDeRober"
 #define PASSWORD    "RDR23Pass"
-#define HOST        "192.168.1.150"
+#define HOST        "192.168.43.246" // this host
 #define PORT        5000
 #define TEMP_ENDP   "temp"
-#define WEIGHT_ENDP "weight"
-#define MESSAGE     "{\"msg\": %f}"
+#define MESSAGE     "{\"msg\": %f, \"id\": %d}"
 #define ENDP_BKBN   "http://%s:%d/%s" // host:port/manager
 
 constexpr int32_t   max_reading = 4096;
@@ -30,6 +30,7 @@ HTTPClient httpClient;
 
 LedColour led_colour;
 
+uint32_t device_id;
 uint64_t read_ctl2;
 
 
@@ -69,7 +70,7 @@ void send (char* server_endpoint, float reading) {
   char complete_endpoint[128];
 
   sprintf(complete_endpoint, ENDP_BKBN, HOST, PORT, server_endpoint);
-  sprintf(json_reading, MESSAGE, reading);
+  sprintf(json_reading, MESSAGE, reading, device_id);
 
   httpClient.begin(complete_endpoint);
   httpClient.addHeader("Content-Type", "application/json");
@@ -104,27 +105,49 @@ void shutdown_rgb_led () {
   digitalWrite(D11, 0);
 }
 
+void get_device_id() {
+  char complete_endpoint[128];
+  
+  sprintf(complete_endpoint, ENDP_BKBN, HOST, PORT, "get_id");
+
+  httpClient.begin(complete_endpoint);
+
+  if (httpClient.GET() == 200) {
+
+    String payload = httpClient.getString();
+    Serial.println(payload);
+
+    DynamicJsonDocument json(50);
+    
+    DeserializationError error = deserializeJson(json, payload);
+    if (error) {
+      Serial.print(F("deserializeJson() failed: "));
+      Serial.println(error.c_str());
+      return;
+    }
+    Serial.println(json["id"].as<int>());
+    device_id = json["id"].as<uint32_t>();
+  } else {
+    exit(EXIT_FAILURE);
+  }
+}
+
 void setup() {
   Serial.begin(9600);
 
   shutdown_rgb_led();
   wifi_connect();
+  get_device_id();
 
   led_colour = (rand() % 2) ? LedColour::Green : LedColour::Blue; 
 }
 
 void loop() {
 
-  /** Forma entendible **/
   const int temp_reading = read(temp_pin);
   const float fair_temp_reading = transform_boundary(temp_reading, 0.0f, 55.0f);
 
   send(TEMP_ENDP, fair_temp_reading);
-  delay(1000);
-  switch_led();
-
-  /** Forma concisa **/
-  send(WEIGHT_ENDP, transform_boundary(read(weight_pin), 10.0f, 200.0f));
   delay(1000);
   switch_led();
 }
