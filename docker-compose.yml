@@ -2,11 +2,10 @@ version: '2'
 
 services:
 
-  ### Remember ctrl + / for block comment
-#   collectd:
-#     extends: 
-#       file: ./collectd-influxdb-grafana-docker/docker-compose.yml
-#       service: collectd
+  collectd:
+    extends: 
+      file: ./collectd-influxdb-grafana-docker/docker-compose.yml
+      service: collectd
 
   influxdb:
     extends: 
@@ -18,46 +17,45 @@ services:
       file: ./collectd-influxdb-grafana-docker/docker-compose.yml
       service: grafana
 
-#   chronograf:
-#     extends: 
-#       file: ./collectd-influxdb-grafana-docker/docker-compose.yml
-#       service: chronograf
+  chronograf:
+    extends: 
+      file: ./collectd-influxdb-grafana-docker/docker-compose.yml
+      service: chronograf
 
-#   telegraf:
-#     extends:
-#       file: ./collectd-influxdb-grafana-docker/docker-compose.yml
-#       service: telegraf
+  telegraf:
+    extends:
+      file: ./collectd-influxdb-grafana-docker/docker-compose.yml
+      service: telegraf
 
-#   kapacitor:
-#     extends:
-#       file: ./collectd-influxdb-grafana-docker/docker-compose.yml
-#       service: kapacitor
+  kapacitor:
+    extends:
+      file: ./collectd-influxdb-grafana-docker/docker-compose.yml
+      service: kapacitor
 
-#   mysql-central-server:
-#     image: mysql:5.7
-#     environment:
-#       - MYSQL_DATABASE=athemes_db
-#       - MYSQL_USER=athemes_user
-#       - MYSQL_PASSWORD=athemes_password
-#       - MYSQL_ROOT_PASSWORD=root
-#     ports:
-#       - "3306:3306"
+  mysql-central-server:
+    image: mysql:5.7
+    environment:
+      - MYSQL_DATABASE=athemes_db
+      - MYSQL_USER=athemes_user
+      - MYSQL_PASSWORD=athemes_password
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - "3306:3306"
 
-#   central-server:
-#     build: ./central_server
-#     command: sh -c "
-#                   wait-for-it mysql-central-server:3306 &&
-# #                  python manage.py makemigrations central_server &&
-#                   python manage.py migrate &&
-#                   python manage.py runserver 0.0.0.0:8000"
-#     volumes:
-#       - ./central_server:/code
-#     ports:
-#       - "8000:8000"
-#     env_file:
-#       - ./central_server/.env
-#     depends_on:
-#       - mysql-central-server
+  central-server:
+    build: ./central_server
+    command: sh -c "
+                  wait-for-it mysql-central-server:3306 &&
+                  python manage.py migrate &&
+                  python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./central_server:/code
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./central_server/.env
+    depends_on:
+      - mysql-central-server
 
   data-collecting-server:
     build: ./data_collecting_server

@@ -1,0 +1,1 @@
+curl -X POST localhost:5000/create_temp_model
