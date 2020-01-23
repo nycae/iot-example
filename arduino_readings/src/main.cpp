@@ -7,10 +7,11 @@
 #include "soc/sens_reg.h"
 
 #define SSID        "RedDeRober"
-#define PASSWORD    "RDR23Pass"
+#define PASSWORD    "RDR23Pass" //"a13c5ba1f5d3"
 #define HOST        "192.168.43.246" // this host
 #define PORT        5000
-#define TEMP_ENDP   "temp"
+#define MSG_ENDP    "temp"
+#define ID_ENDP     "temp/new"
 #define MESSAGE     "{\"msg\": %f, \"id\": %d}"
 #define ENDP_BKBN   "http://%s:%d/%s" // host:port/manager
 
@@ -64,7 +65,7 @@ int read(uint8_t pin) {
   return max_reading - analogRead(pin);
 }
 
-void send (char* server_endpoint, float reading) {
+void send (const char* server_endpoint, float reading) {
 
   char json_reading[256];
   char complete_endpoint[128];
@@ -108,7 +109,7 @@ void shutdown_rgb_led () {
 void get_device_id() {
   char complete_endpoint[128];
   
-  sprintf(complete_endpoint, ENDP_BKBN, HOST, PORT, "get_id");
+  sprintf(complete_endpoint, ENDP_BKBN, HOST, PORT, ID_ENDP);
 
   httpClient.begin(complete_endpoint);
 
@@ -147,7 +148,7 @@ void loop() {
   const int temp_reading = read(temp_pin);
   const float fair_temp_reading = transform_boundary(temp_reading, 0.0f, 55.0f);
 
-  send(TEMP_ENDP, fair_temp_reading);
+  send(MSG_ENDP, fair_temp_reading);
   delay(1000);
   switch_led();
 }

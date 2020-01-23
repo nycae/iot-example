@@ -40,14 +40,29 @@ def add_temp(temp_reading, device_id):
 
 def get_temps():
     measurements    = []
-    result          = db_temp_client.query('SELECT value FROM temperatures;')
+    result          = db_temp_client.query('SELECT value FROM temperatures GROUP BY id;')
+    try:
+        for element in result.raw['series']:
+            for value in element['values']:
+                measurements.append(value)
 
-    for element in result.raw['series']:
-        for value in element['values']:
-            measurements.append(value)
+        return measurements
+    except:
+        return None
 
-    return measurements
+def get_temps_with_id(id):
+    measurements    = []
+    result          = db_temp_client.query('SELECT value FROM temperatures WHERE id = {};'.format(id))
+    
+    try:
+        for element in result.raw['series']:
+            for value in element['values']:
+                measurements.append(value)
 
+        return measurements
+        
+    except:
+        return None
 
 @temp_blueprint.route('/temp', methods = ['POST', 'GET'])
 def attend_temperatures():
@@ -61,7 +76,11 @@ def attend_temperatures():
     if request.method == 'GET':
         return make_response(jsonify({ 'data' : get_temps() }), 200)
 
-@temp_blueprint.route('/get_id', methods = ['GET'])
+@temp_blueprint.route('/temp/<id>', methods = ['GET'])
+def get_temp_of_device(id):
+    return make_response(jsonify({ 'data' : get_temps_with_id(id) }), 200)
+
+@temp_blueprint.route('/temp/new', methods = ['GET'])
 def create_temp_model():
     result = post("http://central-server:8000/fire_alarm/")
 
