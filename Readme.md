@@ -3,7 +3,7 @@
 ## Cómo correr el proyecto
 
 ### Requisitos previos
-Esto es un prototipo para un proyecto IoT llamado \<\<Athemes>>. Para correr este proyecto es necesario, por lo menos, una placa arduino \<\<wemos d1 r32>> y un tablero de expansión multifunción \<\<DHT11 LM35>>.
+Esto es un prototipo para un proyecto IoT llamado \<\<Athemes>>. Para correr este proyecto es necesario, por lo menos, una placa arduino \<\<«wemos d1 r32»>> y un tablero de expansión multifunción \<\<DHT11 LM35>>.
 
 También necesitaremos un equipo compatible con docker-compose en el cual desplegar el clúster propuesto. Si el sistema operativo de nuestro equipo usa dpkg como gestor de paquete podemos instalarlo de la siguiente forma:
 
