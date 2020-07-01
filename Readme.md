@@ -1,66 +1,65 @@
 # Athemes
 
-## Cómo correr el proyecto
+## How-To
 
-### Requisitos previos
-Esto es un prototipo para un proyecto IoT llamado \<\<Athemes>>. Para correr este proyecto es necesario, por lo menos, una placa arduino \<\<«wemos d1 r32»>> y un tablero de expansión multifunción \<\<DHT11 LM35>>.
+### Prerequisites
+Athemes is an IoT proyect stored in this repo. In order to run it you need, at least one, arduino «wemos d1 r32» coupled with a multifunction shield «DHT11 LM35».
 
-También necesitaremos un equipo compatible con docker-compose en el cual desplegar el clúster propuesto. Si el sistema operativo de nuestro equipo usa dpkg como gestor de paquete podemos instalarlo de la siguiente forma:
-
+A sistem able to run docker an docker compose is also neded. If your operating system uses dpkg as its main packet manager you can install docker and docker-compose running the following commands:
 ```
 # apt install docker.io
 # apt install docker-compose
 ```
 
-### Descarga de proyecto.
+### Download
 
-Este proyecto puede descargarse desde la sección \<\<tags>> de github o bien usando git. La versión de descargable en formato comprimido es igual que cualquier otra distribución.
+This proyect can be downloaded in the latest release from this repository or cloning it with git. All versions are the same.
 
-Si se optó por descargar este repositorio usando git es menester no olvidar de clonar también los submódulos.
+Don't forget to pull the submodules if you are using git.
 ```
 $ git clone --recursive https://github.com/RoberPlaza/sistemas-ciberfisicos
 ```
-o
+or
 ```
 $ git clone https://github.com/RoberPlaza/sistemas-ciberfisicos
 $ git submodule init
 $ git submodule update
 ```
 
-### Lanzar el clúster Athemes
+### Launch athemes infrastructure
 
-Para lanzar el clúster Athemes al completo tan solo necesitamos una llamada.
+Simply use doccker compose
 ```
 $ docker-compose up
 ```
 
-Si queremos desplegar sólo parte de las aplicaciones las especificamos en el comando:
+If you want to use only a single module go ahead:
 ```
-$ docker-compose up <nombre-del-servicio>
+$ docker-compose up <module_name>
 ```
 
-**Posible problema:** El servidor central necesita que el servidor mysql esté levantado, para esto espera 5 minutos. En un caso anómalo de correrse en un equipo de muy bajas prestaciones será necesario lanzar otra vez el comando.
+**Possible failure:** The main server waits for the database 5 minutes or less. In a case of an anomalous slow start a cluster restart may be needed.
 
-### Crear la base de datos de temperaturas.
+### Create temperatures database
 
-La primera vez que se lanza la suite es necesario crear la base de datos de temperaturas, para ello se ha provisto de un archivo en la carpeta scripts:
+The first time you run this suite it will be necessary to create the temperatures database, there is a script provided to ease your life:
 
 ```bash
 $ sh scritps/influxdb-init.sh
 ```
-Aunque también se puede crear a mano.
+But you can also do it by hand:
 ```
 curl -X POST http://localhost:8086/query --data-urlencode "q=CREATE DATABASE temperatures;" 
 ```
 
-### Lanzar arduino.
+### Launch the arduino.
 
-Para lanzar arduino es necesario editar el archivo fuente \<\<arduino_readings/src/main.cpp>> y editamos las líneas 9, 10 y 11 con los siguientes valores: el nombre de nuestra red, la contraseña y la ip de red del equipo donde hemos desplegado el clúster. Después será necesario compilar el proyecto con PlatformIO y subirlo al controlador que estemos utilizando.
+In order to run the proyect as expected you may need to rewrite the file «arduino_readings/src/main.cpp». In the lines 9, 10 and 11 there are strings with information about the network name, the password and the central server ip, update them with your values. After that user PlatformIO to compile the program and uploading it to the microcontroller.
 
 ### Final.
 
-Una vez completados los anteriores pasos todo el modelo queda desplegado, y podemos visitar los endpoints localhost:3000 y localhost:8888 para trastear con grafana y cronograf.
+Once everything is deployed and running you can visit localhost:3000 and localhost:8888 in order to play a bit with grafana an cronograf.
 
-### ¿Qué hago si no tengo un arduino a mano?
+### What if I dont have an arduino?
 
-Puedes modificar el archivo docker-compose y añadir un servicio nodered a la pila, recuerda redireccionar el puerto 1800.
+You can use «Node-RED» to simulate it. Add the image to the docker compose, login to localhost:1800 and create a periodic post request on localhost:5000/temp sending a json with the fields "id": number and "msg": number, this last one with the reading.
